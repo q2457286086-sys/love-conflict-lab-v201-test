@@ -1,0 +1,1401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1117">
+<meta name="description" content="一段会记住你说过什么的恋爱：12个选择，5种结局，8种恋爱沟通类型。娱乐向互动故事。">
+<title>恋爱冲突实验室 V2</title>
+<link rel="icon" href="data:,">
+<style>
+:root {
+  /* 夜里的客房：墨色背景，门缝里漏出的暖光是唯一的强调色。不加载任何外部字体。 */
+  --ink: #0e1117;
+  --ink-2: #161a23;
+  --paper: #ece6da;
+  --muted: #8e93a0;
+  --lamp: #e9b872;
+  --lamp-soft: rgba(233, 184, 114, 0.14);
+  --line: rgba(236, 230, 218, 0.10);
+  --you: #232a38;
+  --display: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "Noto Serif SC", serif;
+  --body: -apple-system, "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+button { font: inherit; color: inherit; touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+button:focus-visible { outline: 2px solid var(--lamp); outline-offset: 3px; }
+.hidden { display: none !important; }
+
+/* 整个应用是一块固定高度的屏：顶栏 / 可滚动正文 / 底部操作区 */
+.app {
+  max-width: 460px; margin: 0 auto;
+  height: 100vh; height: 100dvh;
+  display: flex; flex-direction: column;
+  padding: calc(env(safe-area-inset-top) + 10px) 0 0;
+}
+.scroller {
+  flex: 1; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  padding: 0 20px 20px;
+}
+.dock {
+  flex: none; padding: 12px 20px calc(env(safe-area-inset-bottom) + 16px);
+  background: var(--ink); border-top: 1px solid var(--line);
+  display: flex; flex-direction: column; justify-content: flex-end; gap: 10px;
+}
+.dock.plain { border-top: 0; }
+
+/* ---------- 封面 ---------- */
+.cover { min-height: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 28px; padding-top: 6vh; }
+.cover h1 { font-family: var(--display); font-weight: 900; font-size: 40px; line-height: 1.2; margin: 0; letter-spacing: 0.04em; }
+.cover .sub { color: var(--muted); margin: 10px 0 0; font-size: 15px; }
+.door { position: relative; width: 150px; height: 230px; margin: 4px auto 18px; background: linear-gradient(#1b202b, #12161e); border: 1px solid var(--line); border-radius: 3px; }
+.door::after { content: ""; position: absolute; left: -40px; right: -40px; bottom: -14px; height: 14px; background: radial-gradient(ellipse at 50% 0, rgba(233,184,114,.5), rgba(233,184,114,0) 70%); }
+.door::before { content: ""; position: absolute; right: 18px; top: 50%; width: 6px; height: 6px; border-radius: 50%; background: #3a4150; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 14px; color: var(--muted); font-size: 13px; }
+.cta { width: 100%; padding: 16px; border: 0; border-radius: 14px; cursor: pointer; background: var(--lamp); color: #1b1408; font-weight: 700; font-size: 17px; letter-spacing: .08em; }
+.cta:active { opacity: .85; }
+.ghost { width: 100%; padding: 14px; border-radius: 14px; cursor: pointer; background: transparent; border: 1px solid var(--line); color: var(--paper); text-align: center; text-decoration: none; display: block; }
+.ghost:active { background: var(--ink-2); }
+.fine { color: var(--muted); font-size: 12px; text-align: center; margin: 0; }
+.eyebrow { font-size: 12px; color: var(--muted); letter-spacing: .2em; margin: 0; }
+
+/* ---------- 选择称呼 ---------- */
+.setup { min-height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+.setup h2 { font-family: var(--display); font-size: 26px; line-height: 1.4; margin: 0; font-weight: 700; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.pick { padding: 26px 0; border-radius: 16px; border: 1px solid var(--line); background: var(--ink-2); font-family: var(--display); font-size: 30px; cursor: pointer; }
+.pick:active { border-color: var(--lamp); }
+
+/* ---------- 顶栏 ---------- */
+.bar { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 12px; color: var(--muted); letter-spacing: .06em; min-height: 28px; padding: 0 20px 6px; }
+.ticks { display: flex; gap: 3px; }
+.ticks i { width: 12px; height: 3px; border-radius: 2px; background: var(--line); display: block; }
+.ticks i.on { background: var(--lamp); }
+
+/* ---------- 剧情 ---------- */
+.stage { display: flex; flex-direction: column; gap: 14px; padding-top: 14px; }
+.scene-head { display: flex; align-items: baseline; gap: 10px; }
+.scene-head h3 { font-family: var(--display); font-size: 25px; font-weight: 700; margin: 0; line-height: 1.3; }
+.chip { font-size: 11px; padding: 2px 8px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); white-space: nowrap; }
+.lines { display: flex; flex-direction: column; gap: 12px; }
+/* 只做透明度动画（合成层完成，不触发重排），整段约 0.3 秒内出完 */
+.ln { animation: fade .22s ease-out both; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.ln.n { color: #cfc9be; }
+.ln.say { padding-left: 14px; border-left: 2px solid var(--lamp); }
+.ln.say .who { display: block; font-size: 12px; color: var(--lamp); letter-spacing: .1em; line-height: 1.4; }
+.ln.say .t { font-family: var(--display); font-size: 18px; font-weight: 500; }
+.ln.me { align-self: flex-end; max-width: 85%; background: var(--you); padding: 10px 14px; border-radius: 16px 16px 4px 16px; font-family: var(--display); }
+.ln.msg { align-self: flex-start; max-width: 88%; background: #f2efe8; color: #1a1d24; padding: 10px 14px; border-radius: 16px 16px 16px 4px; font-size: 15px; }
+.ln.msg .who { display: block; font-size: 11px; color: #6b6f78; line-height: 1.3; }
+.ln.mem { align-self: flex-start; font-size: 12px; color: var(--lamp); background: var(--lamp-soft); padding: 3px 10px; border-radius: 99px; line-height: 1.6; }
+.ln.mem::before { content: "林屿记得 · "; opacity: .8; }
+.ln.memo { background: var(--paper); color: #2b2620; padding: 16px 18px; border-radius: 4px; font-family: var(--display); font-size: 15px; line-height: 1.85; }
+.react { border-top: 1px dashed var(--line); padding-top: 14px; margin-top: 2px; }
+.react .picked-echo { font-size: 12px; color: var(--muted); }
+
+/* 底部选项：4 个按钮固定在操作区内 */
+.prompt { color: var(--muted); font-size: 12px; margin: 0; letter-spacing: .1em; }
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt { text-align: left; padding: 12px 14px; border-radius: 12px; cursor: pointer; background: var(--ink-2); border: 1px solid var(--line); line-height: 1.45; font-size: 15px; min-height: 48px; }
+.opt:active { border-color: var(--lamp); }
+.opt.picked { border-color: var(--lamp); background: var(--lamp-soft); }
+.opt[disabled] { cursor: default; }
+.opts.done .opt:not(.picked) { opacity: .28; }
+
+/* ---------- 章节卡 ---------- */
+.chapter { min-height: 100%; display: flex; flex-direction: column; justify-content: center; gap: 18px; }
+.chapter .seam { width: 2px; height: 90px; background: linear-gradient(transparent, var(--lamp), transparent); }
+.chapter .no { color: var(--lamp); letter-spacing: .3em; font-size: 13px; }
+.chapter h2 { font-family: var(--display); font-size: 34px; margin: 0; font-weight: 900; }
+.recap { border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: #cfc9be; }
+.recap b { color: var(--muted); font-weight: 400; margin-right: 8px; font-variant-numeric: tabular-nums; }
+
+/* ---------- 报告 ---------- */
+.report { display: flex; flex-direction: column; gap: 22px; padding-top: 14px; }
+.type-name { font-family: var(--display); font-size: 40px; font-weight: 900; margin: 4px 0 0; line-height: 1.2; }
+.type-en { font-size: 11px; letter-spacing: .3em; color: var(--lamp); }
+.tagline { font-family: var(--display); font-size: 19px; line-height: 1.6; margin: 0; }
+.end-chip { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; padding: 6px 12px; border-radius: 99px; background: var(--lamp-soft); color: var(--lamp); align-self: flex-start; }
+.card { background: var(--ink-2); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.card h4 { margin: 0; font-size: 13px; color: var(--muted); font-weight: 500; letter-spacing: .12em; }
+.axis { display: grid; grid-template-columns: 68px 1fr 68px; align-items: center; gap: 10px; font-size: 13px; }
+.axis span { color: var(--muted); }
+.axis span:last-child { text-align: right; }
+.axis .on { color: var(--paper); font-weight: 700; }
+.track { position: relative; height: 6px; border-radius: 3px; background: var(--line); }
+.track::before { content: ""; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: rgba(236,230,218,.25); }
+.dot { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--lamp); }
+.kv { display: flex; flex-direction: column; gap: 4px; }
+.kv .k { font-size: 12px; color: var(--lamp); letter-spacing: .1em; }
+.meme { font-family: var(--display); font-size: 16px; border-left: 2px solid var(--lamp); padding-left: 12px; }
+.quote { font-family: var(--display); font-size: 16px; }
+.slots { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.slot { padding: 10px 12px; border-radius: 10px; border: 1px dashed var(--line); font-size: 13px; color: var(--muted); }
+.slot.got { border-style: solid; border-color: rgba(233,184,114,.45); color: var(--paper); }
+.teaser { background: linear-gradient(160deg, #1d2230, #141821); }
+.teaser .t { font-family: var(--display); font-size: 21px; font-weight: 700; margin: 0; }
+.debug { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--muted); white-space: pre-wrap; line-height: 1.6; }
+.linkish { background: none; border: 0; color: var(--muted); text-decoration: underline; font-size: 12px; cursor: pointer; padding: 4px; align-self: center; }
+
+/* ---------- 分享卡弹层 ---------- */
+/* 弹层整体可滚动，内容用 margin:auto 居中：矮屏上不会把图片顶部或按钮裁掉 */
+.modal { position: fixed; inset: 0; background: rgba(5,7,10,.92); display: flex; flex-direction: column; align-items: center; gap: 12px; padding: calc(env(safe-area-inset-top) + 16px) 20px calc(env(safe-area-inset-bottom) + 16px); z-index: 10; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.modal > :first-child { margin-top: auto; }
+.modal > :last-child { margin-bottom: auto; }
+.modal img { display: block; width: auto; height: auto; max-width: min(340px, 86vw); max-height: 58vh; max-height: 58dvh; object-fit: contain; border-radius: 14px; flex: none; }
+.modal p { text-align: center; max-width: 340px; }
+.modal p { color: var(--muted); font-size: 13px; margin: 0; }
+.modal .ghost, .modal .cta { max-width: 360px; }
+
+@media (prefers-reduced-motion: reduce) { .ln { animation: none; } }
+
+/* ---------- V2 ---------- */
+.cover .hook { margin: 22px 0 0; font-family: var(--display); font-size: 17px; line-height: 1.8; color: #cfc9be; border-left: 2px solid var(--lamp); padding-left: 14px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.stat { font-size: 12px; padding: 5px 10px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); font-variant-numeric: tabular-nums; }
+.ev { display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: baseline; font-size: 15px; line-height: 1.5; }
+.ev-no { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.ev-t { font-family: var(--display); }
+.ev-p { font-size: 11px; color: var(--lamp); border: 1px solid var(--lamp); border-radius: 99px; padding: 1px 8px; white-space: nowrap; }
+.counter { margin: 0; font-size: 13px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 12px; }
+.slots { grid-template-columns: 1fr 1fr 1fr; }
+.slot { font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<noscript><p style="padding:24px;color:#ece6da">这个互动故事需要开启 JavaScript。</p></noscript>
+<script>
+/* 恋爱冲突实验室 · 剧情与规则引擎（纯逻辑，无DOM，可在Node中测试） */
+(function (root) {
+  'use strict';
+
+  // ---------- 文本行构造 ----------
+  const n = (t) => ({ k: 'n', t });            // 旁白
+  const say = (who, t) => ({ k: 'say', who, t }); // 对白
+  const me = (t) => ({ k: 'me', t });          // 你说的话
+  const msg = (who, t) => ({ k: 'msg', who, t }); // 手机消息
+  const mem = (t) => ({ k: 'mem', t });        // 记忆提示（“林屿记得…”）
+  const memo = (t) => ({ k: 'memo', t });      // 备忘录/纸条
+  const L = '林屿';
+
+  // ---------- 阈值（经全路线测试校准） ----------
+  const T = {
+    confess: 2,   // 第7幕：开口度 >= 2 林屿主动坦白
+    s11hi: 4,     // 第11幕：开口度 >= 4 给你看备忘录
+    s11lo: 0,     // 第11幕：开口度 < 0 当晚没回家
+    ending: 1,    // 结局：开口度 >= 1，林屿愿意和你一起定（V2 校准）
+    heard: 3,     // 结局附加句：被听见度 >= 3 视为“高”
+    silent: 1,    // 第9幕：选择等待且开口度 < 1，触发“两个人都在等”
+    strong: 3,    // 人格：轴得分绝对值 >= 3 为明显倾向
+  };
+
+  const AXES = {
+    p: { name: '节奏', pos: '马上面对', neg: '先放一放' },
+    m: { name: '方式', pos: '说出来', neg: '做出来' },
+    d: { name: '距离', pos: '靠近', neg: '留白' },
+    f: { name: '重心', pos: '我的感受', neg: '我们的气氛' },
+  };
+
+  // ---------- 场景 ----------
+  // option: { k, label, tags:{p,m,d,f}, open, heard, set, react(s) }
+  const SCENES = [
+    // ======== 第一章 门关上了 ========
+    {
+      id: 1, ch: 1, title: '门关上之后',
+      text: () => [
+        n('你提前两周订的那家餐厅，晚上七点。'),
+        n('{ta}九点十分才到家，外套上还沾着工作室的打印纸屑。'),
+        n('你们吵了二十分钟。到后来，两个人都说了重话。'),
+        n('{ta}停下来看着你，眼眶一下子红了。'),
+        say(L, '我现在不想谈，能不能让我一个人待会儿？'),
+        n('卧室门轻轻关上。你想起上次{ta}说“待会儿再说”，那件事后来再也没人提过。'),
+      ],
+      options: () => [
+        { k: 'A', label: '隔着门：“好，那十点我们再聊？”', tags: { p: 1, m: 1 }, open: 0, heard: 1,
+          react: () => [
+            n('门里安静了一会儿，传来一声“嗯”。'),
+            n('十点整，{ta}开门出来，靠在门框上。'),
+            say(L, '今天真的说不动了。周日晚上八点，好不好？我保证。'),
+            n('又往后推了一次。可至少，这次有了日子。'),
+          ] },
+        { k: 'B', label: '不再追问，等{ta}想聊了自己来', tags: { p: -1, d: -1 }, open: 2, heard: -1,
+          react: () => [
+            n('一整晚都很安静。'),
+            n('第二天早上，{ta}照常把早餐递给你，说今天降温了。'),
+            n('你接过来，分不清这件事是过去了，还是被叠好收起来了。'),
+          ] },
+        { k: 'C', label: '敲门：“我就说一句，说完就走。”', tags: { p: 1, f: 1 }, open: -1, heard: 2,
+          react: () => [
+            me('我不是气你加班。我是气你连条消息都没发。'),
+            n('门里安静了几秒。'),
+            say(L, '说完了吗？说完了就让我静一下。'),
+            n('话说出来了，你心里松了一点。可你拿不准{ta}听进去了多少。'),
+          ] },
+        { k: 'D', label: '热杯牛奶放门口，发条“我在客厅”', tags: { p: -1, m: -1 }, open: 1, heard: 0,
+          react: () => [
+            n('半小时后，牛奶杯空了，洗干净放回了桌上。'),
+            n('{ta}没有出来，只发来一条消息：'),
+            msg(L, '谢谢。别等我，先睡吧。'),
+            n('你盯着“别等我”三个字，看了很久。'),
+          ] },
+      ],
+    },
+    {
+      id: 2, ch: 1, title: '正在输入…',
+      text: () => [
+        n('第二天{ta}在工作室赶稿，说今晚不回来了。'),
+        n('凌晨一点十二分，手机亮了。'),
+        msg(L, '其实我昨天不想谈，不是因为你。'),
+        n('对话框顶上，“对方正在输入…”亮了又灭，灭了又亮。'),
+        n('三分钟后，什么也没发来。'),
+      ],
+      options: () => [
+        { k: 'A', label: '直接问：“那是因为什么？”', tags: { p: 1, m: 1 }, open: -1, heard: 1,
+          react: () => [
+            n('已读。过了很久：'),
+            msg(L, '项目上的事，说来话长。你先睡。'),
+            n('你知道这不是全部。'),
+          ] },
+        { k: 'B', label: '回：“等你想说的时候，我都在。”', tags: { p: -1, m: 1 }, open: 2, heard: -1,
+          react: () => [
+            msg(L, '嗯。'),
+            n('又过了一会儿：'),
+            msg(L, '晚安。'),
+            n('那三分钟里{ta}打了什么，你不知道。'),
+          ] },
+        { k: 'C', label: '发个“早点睡”的表情包岔开', tags: { p: -1, m: -1 }, open: 1, heard: -1,
+          react: () => [
+            n('你发了一只打哈欠的猫。'),
+            n('{ta}秒回了一只一模一样的猫。'),
+            n('气氛松了。那句“不是因为你”，就这么滑过去了。'),
+          ] },
+        { k: 'D', label: '直接打个视频过去', tags: { p: 1, m: -1 }, open: -1, heard: 1,
+          react: () => [
+            n('响了很久，{ta}接了。镜头里是工作室的灯，{ta}的眼睛很红。'),
+            say(L, '你怎么还没睡？'),
+            n('你们聊了十分钟工作室咖啡机坏了的事。挂断前，{ta}好像想说什么，最后只说了晚安。'),
+          ] },
+      ],
+    },
+    {
+      id: 3, ch: 1, title: '生日局', quick: true,
+      text: () => [
+        n('周六是小满的生日局。{ta}来了，坐在你旁边，手机却几乎没放下过。'),
+        n('散场回家的路上，小满发来私信：'),
+        msg('小满', '你们俩还好吗？{ta}今天一直在看手机诶'),
+      ],
+      options: () => [
+        { k: 'A', label: '跟小满全倒出来', tags: { f: 1, d: -1 }, open: 0, heard: 0,
+          react: () => [n('你打了很长一段。小满回：“抱抱，下周请你喝酒。”心里舒服多了。')] },
+        { k: 'B', label: '回：“没事，{ta}最近忙。”', tags: { f: -1, d: 1 }, open: 1, heard: -1,
+          react: () => [n('小满回：“好吧，有事说哈。”你锁上屏幕，挽住了{ta}的胳膊。')] },
+        { k: 'C', label: '直接问{ta}：“你手机上在看什么？”', tags: { f: 1, d: 1 }, open: -1, heard: 1,
+          react: () => [n('{ta}愣了一下：“工作上的事。”然后把手机揣进了兜里。')] },
+        { k: 'D', label: '不回小满，也不问{ta}', tags: { f: -1, d: -1 }, open: 0, heard: -1,
+          react: () => [n('你把手机放回口袋。路灯一盏一盏往后退，你们谁都没说话。')] },
+      ],
+    },
+
+    // ======== 第二章 各自的习惯 ========
+    {
+      id: 4, ch: 2, title: '说好的那次谈话',
+      text: (s) => {
+        const c1 = s.choices[1];
+        const open = {
+          A: [mem('第1幕 · 你约了时间'), n('周日晚上八点，门铃响了。{ta}拎着两杯奶茶站在门口，钥匙明明就在兜里。'), say(L, '说好周日的。我没忘。')],
+          B: [mem('第1幕 · 你没有追问'), n('一周过去了，谁都没再提那天晚上。'), n('周日晚上，{ta}抱着电脑在你旁边坐下，过了很久才开口：'), say(L, '那天的事……我们聊聊吧。')],
+          C: [mem('第1幕 · 你隔着门说了那句话'), n('周日晚上，{ta}忽然在你旁边坐下。'), say(L, '你那天隔着门说的那句话，我想了好几天。')],
+          D: [mem('第1幕 · 你热了一杯牛奶'), n('周日早上，你的杯子旁边多了一张便利贴，是{ta}的字：'), memo('谢谢那杯牛奶。今晚聊聊？')],
+        }[c1];
+        return open.concat([
+          n('{ta}说最近项目压力太大，那天是真的走不开。说完，{ta}低头抠着指甲。'),
+          n('你听得出来，这不是全部。'),
+        ]);
+      },
+      options: () => [
+        { k: 'A', label: '追问：“只是项目的事吗？”', tags: { f: 1, p: 1 }, open: -1, heard: 1, set: { promise: true },
+          react: () => [
+            n('{ta}沉默了一下。'),
+            say(L, '……还有件事，我还没想好。等我想好了，第一个告诉你。'),
+            n('你点点头，心里却多了个问号。'),
+          ] },
+        { k: 'B', label: '“我会觉得，自己总被排在后面。”', tags: { f: 1, m: 1 }, open: -1, heard: 2,
+          react: () => [
+            n('{ta}愣住了，像是没想过你会这么说。'),
+            say(L, '我没有……算了。你这么觉得，就是我做得不够。'),
+            n('{ta}说得很诚恳。可你总觉得，{ta}心里还压着别的。'),
+          ] },
+        { k: 'C', label: '提个约定：以后有变化，提前说', tags: { f: -1, p: 1 }, open: 0, heard: 1, set: { agreement: true, promise: true },
+          react: () => [
+            say(L, '行。以后有变化，我提前说。'),
+            n('{ta}答得很快，快得像是在给自己定规矩。'),
+            say(L, '其实……有件事我还没想好。想好了，第一个告诉你。'),
+          ] },
+        { k: 'D', label: '先接受：“好，不聊了，看电影吧。”', tags: { f: -1, p: -1 }, open: 1, heard: -1,
+          react: () => [
+            n('{ta}明显松了口气，片子放到一半，靠在你肩上睡着了。'),
+            n('片尾字幕滚完，你才发现自己一句台词都没记住。'),
+          ] },
+      ],
+    },
+    {
+      id: 5, ch: 2, title: '两天的露营',
+      text: () => [
+        n('周三晚上，{ta}一边收衣服一边说：'),
+        say(L, '这周末阿青叫我去露营，就我们俩，两天。'),
+        n('{ta}没有问你要不要一起。'),
+      ],
+      options: () => {
+        const bye = n('出发那天，阿青在楼下冲你挥手：“{ta}最近挺难的，你多担待啊。”');
+        return [
+          { k: 'A', label: '爽快答应，顺手约了小满逛街', tags: { d: -1, f: 1 }, open: 1, heard: 0,
+            react: () => [
+              say(L, '这么爽快？'),
+              n('{ta}笑了，像是松了口气，又像是有一点点失落。'),
+              bye,
+              n('周末你和小满逛到腿软。{ta}在朋友圈发了一张星空。'),
+            ] },
+          { k: 'B', label: '答应：“玩得开心，注意安全。”', tags: { d: -1, f: -1 }, open: 1, heard: -1,
+            react: () => [
+              say(L, '嗯。'),
+              bye,
+              n('两个晚上，{ta}各发来一张营地的照片，没有配字。'),
+            ] },
+          { k: 'C', label: '“我也想去，能带上我吗？”', tags: { d: 1, f: 1 }, open: -1, heard: 2, set: { knewEarly: true },
+            react: () => [
+              n('{ta}犹豫了两秒：“我问问阿青。”阿青说人多热闹。'),
+              n('周六晚上，篝火边，阿青喝了点酒，拍着{ta}的肩膀：'),
+              say('阿青', '去了深圳可别忘了我们啊！'),
+              n('{ta}的脸一下子僵住了。你假装在看火。'),
+            ] },
+          { k: 'D', label: '答应，约好回来那天一起吃饭', tags: { d: 1, f: -1 }, open: 0, heard: 1,
+            react: () => [
+              say(L, '行，周日晚上我请。'),
+              bye,
+              n('周日晚上，{ta}带回一身烟火味，和一袋你爱吃的烤肠。'),
+            ] },
+        ];
+      },
+    },
+    {
+      id: 6, ch: 2, title: '你也有扛不住的一天', quick: true,
+      text: () => [
+        n('周四，你做了两周的方案，被领导当着全组的面说“没有思路”。'),
+        n('回到家，{ta}戴着耳机在赶稿，屏幕上是密密麻麻的图层。'),
+      ],
+      options: () => {
+        const tail = n('后半夜，你迷迷糊糊听见{ta}在客厅压低声音打电话：“……嗯，周五前给您答复。”');
+        return [
+          { k: 'A', label: '“我今天很难受，能陪我十分钟吗？”', tags: { m: 1, f: 1 }, open: 0, heard: 2,
+            react: () => [n('{ta}摘下耳机，把椅子转过来：“说吧。十分钟不够就二十分钟。”那天的稿子，{ta}熬到了凌晨三点。'), tail] },
+          { k: 'B', label: '不说，去洗个澡自己消化', tags: { m: -1, f: -1 }, open: 1, heard: -1,
+            react: () => [n('热水冲下来的时候，你终于哭了一会儿。出来时{ta}还在赶稿，问你：“洗好啦？”你说嗯。'), tail] },
+          { k: 'C', label: '坐到{ta}旁边叹气，等{ta}发现', tags: { m: -1, f: 1 }, open: 0, heard: 0,
+            react: () => [n('你叹了三次气。第三次，{ta}摘下一边耳机：“怎么啦？”你说：“没事。”{ta}看了你一会儿，又戴上了。'), tail] },
+          { k: 'D', label: '去阳台打电话给小满', tags: { m: 1, f: -1 }, open: 0, heard: -1,
+            react: () => [n('你在阳台跟小满骂了领导四十分钟。回屋时，{ta}正好抬头：“跟谁聊这么久？”你说：“小满。”'), tail] },
+        ];
+      },
+    },
+
+    // ======== 第三章 旧账翻出来 ========
+    {
+      id: 7, ch: 3, title: '你是最后一个知道的吗',
+      variant: (s) => (s.flags.knewEarly ? 'early' : s.open >= T.confess ? 'confess' : 'leak'),
+      text: (s) => {
+        const v = SCENES[6].variant(s);
+        if (v === 'early') return [
+          mem('第5幕 · 你在篝火边听到了'),
+          n('周六晚上，{ta}终于开口了。'),
+          say(L, '深圳有家工作室要我，二面完两周了。周五前要答复。'),
+          n('你没说话。这件事，你从露营那晚就知道了。'),
+          n('{ta}看着你的表情，愣住了。'),
+          say(L, '……你早就知道？'),
+        ];
+        if (v === 'confess') return [
+          n('周六晚上，{ta}把电脑合上，在你对面坐下。'),
+          s.flags.promise
+            ? say(L, '我说过，想好了第一个告诉你。还没完全想好，但不能再拖了。')
+            : say(L, '有件事，我一直没跟你说。'),
+          say(L, '深圳有家工作室要我。二面完两周了，周五前要答复。'),
+        ].concat(s.flags.promise ? [mem('第4幕 · 你问出了“还有件事”')] : []);
+        return [
+          n('周六，阿青约你们俩吃火锅。吃到一半，她随口一问：'),
+          say('阿青', '对了，你们深圳的房子看了吗？'),
+          n('桌上安静了。阿青看看{ta}，又看看你，放下了筷子。'),
+          say('阿青', '……我是不是说了不该说的。'),
+          n('回家的路上，{ta}终于说了：深圳的一家工作室，二面完两周了，周五前要答复。'),
+        ];
+      },
+      options: (s) => {
+        const early = SCENES[6].variant(s) === 'early';
+        return [
+          { k: 'A', label: early ? '“你为什么一直不说？”' : '“为什么不早点告诉我？”', tags: { p: 1, f: 1 }, open: -1, heard: 2,
+            react: () => [
+              say(L, '因为我自己都没想好！我怕说了，你就……'),
+              n('{ta}没说下去。'),
+              say(L, '我怕你让我别去，我也怕你让我去。'),
+            ] },
+          { k: 'B', label: '先问：“你自己想去吗？”', tags: { p: 1, f: -1 }, open: 2, heard: -1,
+            react: () => [
+              n('{ta}看了你很久。'),
+              say(L, '想。可我分不清，我想去是因为工作，还是想逃开现在这一团乱。'),
+              n('这是这一周来，{ta}说得最多的一次。'),
+            ] },
+          { k: 'C', label: '“我需要想想。”说完回了卧室', tags: { p: -1, f: 1 }, open: 0, heard: 1, set: { doorClosed: true },
+            react: () => [
+              n('你关上了卧室的门。'),
+              n('门外很久没有动静。过了一会儿，门缝底下透进来一点光——{ta}把客厅的灯开着，没去睡。'),
+              n('你突然有点明白，那天晚上{ta}在门里是什么感觉了。'),
+            ] },
+          { k: 'D', label: '开玩笑：“深圳好啊，我早想换城市了。”', tags: { p: -1, f: -1 }, open: 1, heard: -2,
+            react: () => [
+              n('{ta}笑了一下，笑得很勉强。'),
+              say(L, '你是认真的吗？'),
+              n('你没接话。{ta}也没再问。'),
+              n('那一晚，你们对彼此都很客气。'),
+            ] },
+        ];
+      },
+    },
+    {
+      id: 8, ch: 3, title: '旧账',
+      variant: (s) => {
+        if (s.choices[3] === 'A') return 'gossip';
+        if (s.flags.knewEarly) return 'early';
+        if (['B', 'C', 'D'].includes(s.choices[6])) return 'hid' + s.choices[6];
+        return 'self';
+      },
+      text: (s) => {
+        const v = SCENES[7].variant(s);
+        const head = [
+          n('第二天，事情还是吵起来了。起因只是谁随口问了一句“那到底什么时候决定”。'),
+          n('吵到最凶的时候，{ta}说：'),
+        ];
+        const body = {
+          gossip: [mem('第3幕 · 你跟小满全倒了出来'), say(L, (s.choices[7] === 'A' ? '你还说我瞒你？' : '') + '小满在我朋友圈底下评论“某些人约会全程看手机”，阿青都跑来问我们是不是要分了。')],
+          early: [mem('第5幕 · 你在篝火边听到了'), say(L, '你在篝火边就听到了吧？你知道了一个星期，为什么一个字都不问？')],
+          hidB: [mem('第6幕 · 你自己去洗了个澡'), say(L, '那天你洗了快一个小时澡，出来眼睛是红的。我是没问。可你也没说啊。')],
+          hidC: [mem('第6幕 · 你说了“没事”'), say(L, '那天我问你怎么了，你说没事。你难受也不跟我说，凭什么只怪我不说？')],
+          hidD: [mem('第6幕 · 你打给了小满'), say(L, '那天你在阳台打了四十分钟电话。跟小满能说，跟我就不能说？')],
+          self: [say(L, '……对，是我不对。我不该瞒你。'), say(L, '可我是真的不知道怎么开口。')],
+        }[v];
+        return head.concat(body);
+      },
+      options: (s) => {
+        const self = SCENES[7].variant(s) === 'self';
+        return [
+          { k: 'A', label: '“这件事，我也有做得不好的地方。”', tags: { f: -1, d: 1 }, open: 1, heard: -1,
+            react: () => [
+              n('{ta}的火一下子没了，像一拳打在棉花上。'),
+              say(L, '……我也不是想翻旧账。'),
+              n('你们坐在沙发两头，谁也没走。'),
+            ] },
+          { k: 'B', label: self ? '“你知道我这一周是怎么过的吗？”' : '“我那么做，是有原因的。”', tags: { f: 1, d: 1 }, open: -1, heard: 1,
+            react: () => self ? [
+              n('你说了这一周：那三分钟的“正在输入”，那些你一个人猜的晚上。'),
+              n('{ta}听着，眼圈又红了。'),
+              say(L, '对不起。我以为不说，你就不用跟着我一起乱。'),
+            ] : [
+              n('你说了你的原因。{ta}听完，点了点头，又摇了摇头。'),
+              say(L, '我懂。可我当时也有我的原因。'),
+              n('那天晚上，你们都觉得自己被误解了一点点。'),
+            ] },
+          { k: 'C', label: '“现在说的是深圳的事。”', tags: { f: 1, d: -1 }, open: -2, heard: 2,
+            react: () => [
+              say(L, '好，说深圳。'),
+              n('{ta}深吸一口气，语气冷静得有点陌生。'),
+              say(L, '那你告诉我，你希望我怎么选？'),
+              n('你突然答不上来。'),
+            ] },
+          { k: 'D', label: '“我们都先停一停，明天再说。”', tags: { f: -1, d: -1 }, open: 1, heard: 0,
+            react: () => [
+              n('{ta}没说话，拿起外套下楼去了便利店。'),
+              n('二十分钟后回来，手里多了两瓶你们常喝的汽水。{ta}放了一瓶在你面前，什么也没说。'),
+            ] },
+        ];
+      },
+    },
+    {
+      id: 9, ch: 3, title: '谁先迈一步', quick: true,
+      text: () => [
+        n('周一。家里安静得能听见冰箱的声音。'),
+        n('离周五，还有四天。'),
+      ],
+      options: (s) => {
+        // 林屿自己迈的一步，取决于第6幕
+        const step = s.choices[6] === 'A'
+          ? [mem('第6幕 · 你要过十分钟'), n('中午，{ta}发来一条消息：'), msg(L, '那天你要的十分钟，这次换我要。今晚可以吗？')]
+          : [n('那天{ta}也迈了一步：餐桌上留着早餐，压着一张纸条——'), memo('周五之前，我们好好说一次。')];
+        return [
+          { k: 'A', label: '写一条很长的消息给{ta}', tags: { p: 1, m: 1 }, open: -1, heard: 2,
+            react: (s2) => [n('你在备忘录里写了删、删了写，终于按下发送。'), s2.open >= T.confess
+              ? n('几乎同一秒，屏幕上跳出{ta}发来的一条——也很长。')
+              : n('过了很久，{ta}回：“我看了三遍。晚上回家说。”')].concat(step) },
+          { k: 'B', label: '做一顿饭，不提吵架的事', tags: { p: -1, m: -1 }, open: 1, heard: -1,
+            react: () => [n('你炖了{ta}爱吃的排骨。{ta}进门闻到味道，在玄关站了很久。')].concat(step) },
+          { k: 'C', label: '约{ta}晚上去江边走走，当面说', tags: { p: 1, m: 1 }, open: 0, heard: 1,
+            react: () => [n('晚上你们沿着江边走了很久。风很大，好多话被吹散了，但你们都在听。')].concat(step) },
+          { k: 'D', label: '等{ta}先来', tags: { p: -1, m: -1 }, open: 0, heard: -1,
+            react: (s2) => s2.open < T.silent
+              ? (s2.flags.silent = true, [n('一整天，你们都在等对方先开口。'), n('晚上十一点，两个人同时伸手去关客厅的灯，手碰在了一起。'), n('谁都没有笑，也谁都没有把手拿开。')])
+              : [n('你等了一上午。')].concat(step) },
+        ];
+      },
+    },
+
+    // ======== 第四章 周五之前 ========
+    {
+      id: 10, ch: 4, title: '你怎么想',
+      text: (s) => [
+        n('周三晚上，{ta}把一张打印出来的offer放在桌上。薪水比现在多四成，下个月入职。'),
+        s.open >= T.ending ? n('{ta}的语气很平静，像是已经在心里排练过很多遍。') : n('{ta}没看你，手指一直在桌沿上敲。'),
+      ].concat(s.flags.agreement
+        ? [mem('第4幕 · 你们约定过“有变化提前说”'), say(L, '你说过，有变化要提前说。离周五还有两天，我想先听听你的。')]
+        : [say(L, '周五前要答复。你怎么想？')]),
+      options: (s) => {
+        const alone = s.choices[5] === 'A';
+        const aloneLine = [mem('第5幕 · 你爽快地让{ta}去了露营'), say(L, '你一个人也过得挺好的。我就猜到你会这么说。')];
+        return [
+          { k: 'A', label: '“你去吧，我支持你。”', tags: { f: -1, d: -1 }, open: 1, heard: -1,
+            react: () => alone
+              ? [n('{ta}看着你，像是松了口气，又像是被什么扎了一下。')].concat(aloneLine)
+              : [say(L, '你真的这么想？'), n('{ta}问得很认真。你点头的时候，自己也不太确定。')] },
+          { k: 'B', label: '“说实话，我不想异地。”', tags: { f: 1, d: 1 }, open: 0, heard: 2,
+            react: () => [
+              n('{ta}没接话，低头把那张offer折了一下，又展开。'),
+              say(L, '谢谢你说实话。'),
+              say(L, '我也不想。可我更怕十年以后后悔。'),
+            ] },
+          { k: 'C', label: '“我们把账算清楚：钱、时间、我能不能过去。”', tags: { f: -1, d: 1 }, open: 1, heard: 1,
+            react: () => [
+              n('你们找了张A4纸，左边写“去”，右边写“不去”。写到房租那一栏，{ta}突然笑了。'),
+              say(L, '你连我通勤时间都算了？'),
+              n('纸最后写满了，但谁都没在下面签字。'),
+            ] },
+          { k: 'D', label: '“这是你的事，我不想影响你。”', tags: { p: -1, d: -1 }, open: -1, heard: -1,
+            react: () => alone
+              ? [n('{ta}沉默了好一会儿。')].concat(aloneLine)
+              : [say(L, '我的事？'), n('{ta}重复了一遍。'), say(L, '我以为，这是我们的事。')] },
+        ];
+      },
+    },
+    {
+      id: 11, ch: 4, title: '周四晚上',
+      variant: (s) => (s.open >= T.s11hi ? 'hi' : s.open < T.s11lo ? 'lo' : 'mid'),
+      text: (s) => {
+        const v = SCENES[10].variant(s);
+        if (v === 'hi') {
+          const out = [
+            mem('第2幕 · 凌晨一点十二分的“正在输入”'),
+            n('周四晚上，{ta}把手机递给你。是一条备忘录，时间是上周二凌晨一点十二分。'),
+          ];
+          if (s.choices[2] === 'B') out.push(say(L, '那天你说，等我想说的时候。我想说了。'));
+          out.push(memo('其实我拿到了深圳的offer。我很想去，又怕一说出来，我们就要开始吵异地的事。我不想因为工作跟你吵，所以想等自己想清楚再说。可我越想越不清楚。对不起，还是没发。'));
+          if (s.choices[2] === 'D') out.push(say(L, '那晚你打视频过来，我差点就说了。'));
+          return out;
+        }
+        if (v === 'mid') return [
+          n('周四晚上，{ta}回到家，鞋都没换。'),
+          say(L, '我想好了。但我想先听你说完，再告诉你是什么。'),
+        ];
+        const out = [
+          n('周四晚上，{ta}没有回家。十一点，手机亮了：'),
+          msg(L, '我在工作室。想清楚了就回来。别等我。'),
+        ];
+        if (s.choices[1] === 'D') out.push(mem('第1幕 · 那条“别等我”'), n('又是“别等我”。'));
+        return out;
+      },
+      options: (s) => {
+        const lo = SCENES[10].variant(s) === 'lo';
+        return [
+          { k: 'A', label: lo ? '发一段长语音，把感受全说出来' : '把这一周憋着的话全说出来', tags: { m: 1, p: 1 }, open: 0, heard: 2,
+            react: () => lo
+              ? [n('你说完才发现自己在发抖。二十分钟后，语音旁边的小红点消失了。')]
+              : [n('你说你不怪{ta}没说，你只是难过这一周，你们明明睡在一张床上，却各想各的。'), n('说到一半你哭了。{ta}也没好到哪儿去。')] },
+          { k: 'B', label: lo ? '什么也不说，打车去工作室找{ta}' : '什么也不说，抱住{ta}', tags: { m: -1, p: 1 }, open: 1, heard: 0,
+            react: () => lo
+              ? [n('{ta}开门看见你，愣了好久，然后侧身让你进去。'), n('那晚你们在工作室的沙发上挤到天亮，没怎么说话。')]
+              : [n('{ta}的下巴搁在你肩上，很久很久。')] },
+          { k: 'C', label: lo ? '回：“你具体打算怎么安排？”' : '问清楚：入职时间、房租、多久回来', tags: { m: 1, p: -1 }, open: 1, heard: 0,
+            react: () => lo
+              ? [msg(L, '明天早上，当面说。'), n('{ta}凌晨三点回来了，轻手轻脚进了卧室。')]
+              : [n('{ta}一条一条答，答到最后笑了。'), say(L, '你问得比HR还细。')] },
+          { k: 'D', label: lo ? '回：“好，我等你。”' : '“给我一晚上，明早再说。”', tags: { m: -1, p: -1 }, open: 1, heard: -1,
+            react: () => lo
+              ? [n('你把客厅的灯留着。凌晨三点，钥匙转动的声音，{ta}轻手轻脚进了卧室。')]
+              : [say(L, '好。我也想再想一晚。')] },
+        ];
+      },
+    },
+    {
+      id: 12, ch: 4, title: '门',
+      // 第12幕：重大决定由玩家明确说出口；林屿是否接受，取决于这一周积累下来的“开口度”
+      variant: (s) => (s.flags.doorClosed ? 'inside' : 'outside'),
+      text: (s) => {
+        const studio = s.variants[11] === 'lo' && s.choices[11] === 'B';
+        if (SCENES[11].variant(s) === 'inside') return [
+          mem('第7幕 · 那晚，是你关上了门'),
+          studio
+            ? n('天亮才从工作室回来。你说想补个觉，进了卧室，顺手关上了门。')
+            : n('周五早上七点。卧室门关着——是你昨晚睡前自己关上的。'),
+          n('门外有脚步声。停了一会儿，响起两下很轻的敲门声。'),
+          say(L, '不用开门，隔着门说也行。九点前我要回复深圳。'),
+          say(L, '这一周都是我在想、我在拖。这次我想先听你的——你想要什么？'),
+        ];
+        const before = studio
+          ? n('天快亮时，你们一起回了家。{ta}说想一个人想最后一下，进了卧室。')
+          : s.variants[11] === 'lo' && s.choices[11] === 'A'
+            ? n('{ta}凌晨三点才回来，直接进了卧室。')
+            : n('天亮前，{ta}说想一个人想最后一下，进了卧室。');
+        return [
+          before,
+          n('周五早上七点。九点前，{ta}要给深圳那边答复。'),
+          n('卧室门开了。{ta}站在门口，头发乱着，眼睛下面一片青。'),
+          say(L, '我想了一晚上。但这次，我想先听你的——你想要什么？'),
+        ];
+      },
+      options: (s) => {
+        const c10 = s.choices[10];
+        const gave = c10 === 'A' || c10 === 'D';
+        return [
+          { k: 'A', label: '“我跟你去深圳。”', tags: { d: 1, f: -1 }, open: 0, heard: 1, set: { decision: 'go' },
+            react: () => (c10 === 'B'
+              ? [mem('第10幕 · 你说过不想异地'), say(L, '所以你说不想异地……是这个意思。')]
+              : gave ? [mem('第10幕 · ' + (c10 === 'A' ? '你说“你去吧”' : '你说“这是你的事”')), say(L, c10 === 'A' ? '前天你还说“你去吧，我支持你”。' : '前天你还说，这是我自己的事。')] : [])
+              .concat([n('{ta}愣在门口，很久没有说话。')]) },
+          { k: 'B', label: '“你去。我们试一年异地。”', tags: { d: -1, f: -1 }, open: 0, heard: 0, set: { decision: 'apart' },
+            react: () => (c10 === 'B'
+              ? [mem('第10幕 · 你说过不想异地'), say(L, '你前天还说，你不想异地。')]
+              : [say(L, '一年。')]).concat([n('{ta}把这两个字重复了一遍，像是在掂它的分量。')]) },
+          { k: 'C', label: '“我希望你留下。”', tags: { d: 1, f: 1 }, open: 0, heard: 2, set: { decision: 'stay' },
+            react: () => (gave
+              ? [mem('第10幕 · ' + (c10 === 'A' ? '你说“你去吧”' : '你说“这是你的事”')), say(L, c10 === 'A' ? '前天你还说“你去吧，我支持你”。' : '前天你还说，这是我自己的事。')]
+              : []).concat([n('这是这一周，你说得最直接的一句话。')]) },
+          { k: 'D', label: '“我还没想好，不想今天就定。”', tags: { p: -1, f: 1 }, open: 0, heard: 1, set: { decision: 'wait' },
+            react: () => [n('{ta}没有失望，也没有松一口气。'), say(L, '……其实我也没想好。')] },
+        ];
+      },
+    },
+  ];
+
+  const CHAPTERS = {
+    1: { name: '第一章', title: '门关上了' },
+    2: { name: '第二章', title: '各自的习惯' },
+    3: { name: '第三章', title: '旧账翻出来' },
+    4: { name: '第四章', title: '周五之前' },
+  };
+
+  // ---------- 结局 ----------
+  // 结局 = 玩家在第12幕亲口说出的决定 × 林屿这一周积累的开口度（TA是否愿意和你一起定）
+  const hiH = (s) => s.heard >= T.heard;
+
+  // 一个月后：先交代结局之后的真实处境（不替玩家做新决定），再加至多一条只属于这条路线的回声
+  const AFTER = {
+    south: (s) => [n('一个月后，{ta}已经在深圳上班了。你还在这边，每晚视频时，{ta}会把租房软件上的房子一间间翻给你看。'), n('你哪天辞职、哪天搬，{ta}没有催。这件事，还在你手里。')],
+    apart: (s) => [n('一个月后，你们的聊天记录里多了很多高铁车次截图。{ta}那边的视频背景总是很吵，工作室的人还没认全。'), n('冰箱上那张纸，你们还在用，也还在改。异地才刚开始，好不好过，现在还说不准。')],
+    stay: (s) => [n('一个月后，{ta}还在原来的工作室加班。深圳那家公司的HR又发来过一次消息，{ta}截图给你看了，没有回。'), n('“后悔”这两个字，你们谁都没提，也谁都没忘。')],
+    alone: (s) => [n('一个月后，{ta}在深圳。你们还在聊天，比以前少，语气比以前小心。'), n('{ta}说春节会回来。到时候要谈什么，你们谁都还没想好。没有人提分开，也没有人提以后。')],
+    open: (s) => s.open >= T.ending
+      ? [n('延期的那一周，你们每天晚上聊半小时，能想到的都摊开了。'), n('一周后，{ta}接了offer。这一次{ta}说：“我先去。我们之后怎么办，你想好了告诉我，我等你。”'), n('一个月后，这个答案还在你这里。')]
+      : [n('延期的那一周过得很快。你们都很忙，也都在躲。'), n('一周后，{ta}还是接了offer。临走前一晚，{ta}问你：“我们……先这样？”'), n('一个月后，这个问题还没有答案。')],
+  };
+  function epilogue(s) {
+    return AFTER[computeEnding(s)](s).concat(echoes(s).slice(0, 1));
+  }
+
+  // 只属于这条路线的回声：只引用玩家真实走过的事
+  function echoes(s) {
+    const c = s.choices, out = [];
+    const add = (cond, line) => { if (cond && out.length < 2) out.push(n(line)); };
+    add(s.flags.doorClosed, '后来你们有了一个约定：谁关了门，另一个人就在门外留一盏灯。');
+    add(s.flags.silent, '那晚两只手碰在一起关灯的事，你们谁都没再提，但都记得。');
+    add(c[6] === 'A', '那次“十分钟”之后，你们多了个暗号：谁扛不住了，就说“借我十分钟”。');
+    add(s.flags.agreement, '“有变化，提前说”被{ta}写进了手机备忘录的第一条。');
+    add(c[3] === 'A', '小满后来在{ta}那条朋友圈底下补了一句：“前面那条是我嘴欠。”');
+    add(c[1] === 'D', '冰箱上还贴着那张便利贴：“谢谢那杯牛奶。”');
+    add(c[1] === 'A', '“说好周日”后来成了你们的规矩：要吵架了，先约个时间。');
+    add(c[2] === 'C', '那只打哈欠的猫，成了你们吵完架之后的求和表情。');
+    add(s.flags.knewEarly, '露营那晚的照片还在相册里。那是你知道这件事的第一个晚上。');
+    return out;
+  }
+
+  const ENDINGS = {
+    south: {
+      name: '一起南下',
+      body: (s) => [
+        n('{ta}站在原地，过了很久才开口。'),
+        say(L, '你知道你在说什么吗？房子、工作、小满……全都要重新来。'),
+        n('你知道。这是你自己说出口的。'),
+        n('八点五十，{ta}回了邮件：“我接受。”什么时候搬、怎么搬，{ta}说要等你来定。'),
+        n('代价都在：你要离开这座城市，离开小满，离开楼下那家早餐店。没人替你承担它，也没人替你做这个决定。'),
+      ].concat(hiH(s)
+        ? [say(L, '你这一周说的每句话，我都记着。到了那边，我们也这样说话。')]
+        : [n('你还有些话没说——比如，你其实有点害怕。路还长，可以慢慢说。')]),
+    },
+    apart: {
+      name: '有期限的异地',
+      body: (s) => [
+        say(L, '好。一年。'),
+        n('{ta}回完邮件，找了张纸，写了几条：每月见一次，轮流坐高铁；吵架不过夜；一年后的今天，重新坐下来谈。'),
+        say(L, '你看看。哪条不行，你就划掉。'),
+        n('没有人能保证这张纸管用。但“一年”是你提出来的，剩下的，你们还可以改。'),
+      ].concat(hiH(s)
+        ? [say(L, '你想我的时候就直说。别让我猜，我猜不准的。')]
+        : [n('那张纸你还没还给{ta}。有几条，你还在想。')]),
+    },
+    stay: {
+      name: '林屿留下',
+      body: (s) => [
+        n('{ta}在门口站了很久。'),
+        say(L, '你说希望我留下。我得承认，听到这句话，我松了口气。'),
+        say(L, '这一周我一直在想：我想去深圳，有一半是想逃开现在的压力。逃过去，压力也会跟着去。'),
+        n('八点五十，{ta}给深圳回了邮件：谢谢，我暂时不去了。'),
+        n('你不确定这是不是对的决定，{ta}也不确定。一个机会就这样错过了。你提出了你的希望，{ta}做了{ta}的选择。'),
+      ].concat(hiH(s)
+        ? [say(L, '以后我要是后悔了，会直接跟你说，不会憋着。你也是。')]
+        : [n('你偶尔会想：{ta}留下，到底有几分是为了自己。你还没问出口。')]),
+    },
+    alone: {
+      name: '各自的决定',
+      body: (s) => {
+        const d = s.flags.decision;
+        const lead = {
+          go: [n('{ta}摇了摇头。'), say(L, '我不想你为我搬家。不是不想跟你在一起——是我不想欠你这么大一个人情。'), say(L, '我先自己去。别的……等我站稳了再说。')],
+          apart: [say(L, '好。'), n('{ta}只说了这一个字。没有聊多久见一次，也没有聊吵架了怎么办。{ta}回完邮件，开始收拾行李。')],
+          stay: [n('{ta}沉默了很久。'), say(L, '对不起。这一周我什么都没跟你说，现在你说了，我却……'), say(L, '这次我想为自己选一次。')],
+        }[d];
+        return lead.concat([
+          n('{ta}下个月就走。你们没有分手，也没有约好什么。'),
+          n('这一周，{ta}把很多话留在了门里。等到你说出想要什么的时候，{ta}已经习惯了自己做决定。'),
+        ]).concat(hiH(s)
+          ? [n('至少你把想要的说出口了。{ta}听见了，只是做了不同的选择。')]
+          : [n('你也有些话一直没说。也许，你们都还在学怎么开口。')]);
+      },
+    },
+    open: {
+      name: '还没说完',
+      body: (s) => {
+        const seen = s.variants[11] === 'hi';
+        const out = [
+          n('你们没有马上决定。{ta}发邮件申请延后一周答复，对方同意了。'),
+        ];
+        if (!seen && (s.choices[2] === 'B' || s.choices[2] === 'D')) {
+          out.push(n('{ta}把手机递给你，是一条存了很久的备忘录，时间是上周二凌晨一点十二分：'));
+          out.push(memo('其实我拿到了深圳的offer。我很想去，又怕一说出来，我们就要开始吵异地的事。所以想等自己想清楚再说。可我越想越不清楚。'));
+        }
+        out.push(s.open >= T.ending
+          ? say(L, '那我们就再想一周。这次一起想，不各想各的。')
+          : say(L, '那……再说吧。'));
+        out.push(n('问题还在。你们俩也都还在。'));
+        return out.concat(hiH(s)
+          ? [n('至少这一周，你想说的话都说出口了。')]
+          : [n('你想说的那些话，也还在心里。')]);
+      },
+    },
+  };
+
+  function computeEnding(s) {
+    const d = s.flags.decision;
+    if (d === 'wait') return 'open';
+    if (s.open < T.ending) return 'alone';
+    return { go: 'south', apart: 'apart', stay: 'stay' }[d];
+  }
+
+  // ---------- 人格类型 ----------
+  const TYPES = {
+    judge: {
+      name: '当日结案官', en: 'SAME-DAY CLOSER',
+      tag: '你的恋爱里很少有“待办”，多半是“已办结”。',
+      strength: '你不太让问题过夜。跟你在一起，对方不用猜太久。',
+      blind: '对方还没准备好的时候，容易被你压着进入“庭审环节”。',
+      tip: '开口前先问一句：“现在能聊吗？还是晚点？”把时间交出去一半。',
+      meme: '吵架效率天花板，但对方的CPU可能还在加载。',
+    },
+    straight: {
+      name: '需求直球手', en: 'STRAIGHT SHOOTER',
+      tag: '你很少让人猜，偶尔让人想躲。',
+      strength: '你习惯把需要摆上桌面，两个人省掉了不少互相猜的内耗。',
+      blind: '球太快，对方接住之前先挨了一下；有时只说了自己那一份。',
+      tip: '说完自己的需要，补一句“你呢？”，然后真的等答案。',
+      meme: '恋爱里的直球选手，主打一个有话直说、真诚是必杀技。',
+    },
+    translator: {
+      name: '情绪同声传译', en: 'EMOTION INTERPRETER',
+      tag: '对方的沉默你能听到十级，自己的心事一直在缓冲。',
+      strength: '能把两个人的情绪翻译成话。吵架时，你是那个让对话继续下去的人。',
+      blind: '翻译别人很勤快，翻译自己很少。',
+      tip: '下次先翻译自己一句：“我现在其实有点……”',
+      meme: '人形情绪字幕组，就是忘了给自己配字幕。',
+    },
+    milk: {
+      name: '热牛奶外交官', en: 'WARM MILK DIPLOMAT',
+      tag: '别人吵架用嘴，你吵架用厨房。',
+      strength: '你的在乎看得见。冷场的时候，你常常是先回暖的那个。',
+      blind: '问题被一杯牛奶盖住了，对方不一定读得懂你的意思。',
+      tip: '做完之后补一句话：“我做这个，是因为……”',
+      meme: '行动派爱意输出，话不多，冰箱里全是答案。',
+    },
+    cooler: {
+      name: '关系冷却塔', en: 'COOLING TOWER',
+      tag: '你的冷静期有说明书，就是没写截止日期。',
+      strength: '你愿意给彼此降温的时间。你给出的空间，是真的空间。',
+      blind: '冷却太久，就变成了冷处理；对方可能读成你不在乎。',
+      tip: '给冷静期加个时间：“我需要一晚上，明天下班聊。”',
+      meme: '降温小能手，就是偶尔降得太久，像离线了。',
+    },
+    keeper: {
+      name: '氛围守门员', en: 'MOOD GOALKEEPER',
+      tag: '你守住了很多个周末，代价是收件箱99+。',
+      strength: '你在意相处的气氛，常常是先把局面稳住的那个。',
+      blind: '待处理的事越堆越多，可能某天一起爆。',
+      tip: '每周挑一件小事说出来，别攒着。',
+      meme: '和平主义守门员，扑出了不少争吵，也扑出了一些真心话。',
+    },
+    planet: {
+      name: '自转小行星', en: 'SELF-ORBITING PLANET',
+      tag: '你有自己的轨道，偶尔忘了对方也想绕着你转。',
+      strength: '你能自己消化不少情绪，很少把压力转嫁给对方。',
+      blind: '对方不知道你也会难受，容易觉得被排除在外。',
+      tip: '自己消化之前，先打个招呼：“我想自己待会儿，不是因为你。”',
+      meme: '独立自主小宇宙，信号偶尔需要手动开启。',
+    },
+    radio: {
+      name: '全频段接收器', en: 'ALL-BAND RECEIVER',
+      tag: '你不是没有风格，你是全频段接收。',
+      strength: '看人看事换方式，什么场面都接得住。',
+      blind: '对方不太好预测你，你自己也不一定清楚最想要什么。',
+      tip: '在确定感、空间、表达、陪伴里挑一个你最在乎的，告诉对方。',
+      meme: '情绪雷达自适应，适配率很高，就是没有默认设置。',
+    },
+  };
+
+  // 两条最强轴的组合 → 类型（覆盖全部24种组合）
+  const PAIR = {
+    'p+m+': 'judge', 'p+m-': 'milk', 'p+d+': 'judge', 'p+d-': 'judge', 'p+f+': 'straight', 'p+f-': 'translator',
+    'p-m+': 'cooler', 'p-m-': 'keeper', 'p-d+': 'milk', 'p-d-': 'cooler', 'p-f+': 'planet', 'p-f-': 'keeper',
+    'm+d+': 'straight', 'm+d-': 'cooler', 'm+f+': 'straight', 'm+f-': 'translator',
+    'm-d+': 'milk', 'm-d-': 'planet', 'm-f+': 'planet', 'm-f-': 'milk',
+    'd+f+': 'straight', 'd+f-': 'milk', 'd-f+': 'planet', 'd-f-': 'cooler',
+  };
+  const SINGLE = { 'p+': 'judge', 'p-': 'cooler', 'm+': 'straight', 'm-': 'milk', 'd+': 'milk', 'd-': 'planet', 'f+': 'straight', 'f-': 'keeper' };
+  const ORDER = ['p', 'm', 'd', 'f'];
+
+  function computeType(s) {
+    const sc = s.axes;
+    // 排序：先比绝对值；并列时比后半程（压力下）的绝对值；再按固定顺序
+    const ranked = ORDER.slice().sort((a, b) => {
+      const d1 = Math.abs(sc[b]) - Math.abs(sc[a]);
+      if (d1) return d1;
+      const d2 = Math.abs(s.half[2][b]) - Math.abs(s.half[2][a]);
+      if (d2) return d2;
+      return ORDER.indexOf(a) - ORDER.indexOf(b);
+    });
+    const strong = ranked.filter((a) => Math.abs(sc[a]) >= T.strong);
+    const flips = ORDER.filter((a) => s.half[1][a] * s.half[2][a] < 0 && Math.abs(s.half[1][a]) >= 2 && Math.abs(s.half[2][a]) >= 2).length;
+    const sign = (a) => (sc[a] > 0 ? '+' : '-');
+    if (strong.length === 0) return 'radio';
+    if (flips >= 2 && Math.abs(sc[strong[0]]) < 4) return 'radio';
+    // 候选：最强两轴组合 → 其它强轴组合 → 单轴默认；跳过与玩家选择明显矛盾的类型
+    const cands = [];
+    for (let i = 0; i < strong.length; i++) for (let j = i + 1; j < strong.length; j++) {
+      const [a, b] = [strong[i], strong[j]].sort((x, y) => ORDER.indexOf(x) - ORDER.indexOf(y));
+      cands.push(PAIR[a + sign(a) + b + sign(b)]);
+    }
+    strong.forEach((a) => cands.push(SINGLE[a + sign(a)]));
+    return cands.find((k) => !contradicts(k, sc)) || 'radio';
+  }
+  // 每种类型的核心特征；若玩家在对应轴上明显相反（反向 2 分以上），就不能给这个类型
+  const CORE = { judge: ['p+'], straight: ['m+'], translator: ['m+', 'f-'], milk: ['m-'], cooler: ['p-'], keeper: ['f-'], planet: ['d-'], radio: [] };
+  function contradicts(k, sc) {
+    return CORE[k].some((c) => { const a = c[0], dir = c[1] === '+' ? 1 : -1; return sc[a] * dir <= -2; });
+  }
+
+  // 各轴最大可能分（用于展示刻度）
+  function axisMax() {
+    const max = { p: 0, m: 0, d: 0, f: 0 };
+    SCENES.forEach((sc) => {
+      const seen = {};
+      // 用一个虚拟状态取选项（标签不随变体改变轴）
+      const opts = sc.options(newState('他', true));
+      opts.forEach((o) => Object.keys(o.tags).forEach((a) => (seen[a] = true)));
+      Object.keys(seen).forEach((a) => max[a]++);
+    });
+    return max;
+  }
+
+  // ---------- 报告个性化：每一句判断都能指回玩家真实做过的选择 ----------
+  function report(s) {
+    const typeKey = computeType(s);
+    const t = TYPES[typeKey];
+    const ending = computeEnding(s);
+    const sign = (v) => (v > 0 ? 1 : v < 0 ? -1 : 0);
+    const pole = (a, v) => (v > 0 ? AXES[a].pos : AXES[a].neg);
+    const top = ORDER.slice().sort((a, b) => Math.abs(s.axes[b]) - Math.abs(s.axes[a])).filter((a) => s.axes[a] !== 0).slice(0, 2);
+
+    // 判定依据：与最明显的两条倾向方向一致的选择，按幕次排序，最多3条
+    const evidence = [];
+    s.log.forEach((e) => {
+      const a = top.find((x) => (e.tags[x] || 0) !== 0 && sign(e.tags[x]) === sign(s.axes[x]));
+      if (a) evidence.push({ scene: e.scene, title: e.title, label: e.label, pole: pole(a, s.axes[a]) });
+    });
+    const ev = evidence.length > 3 ? [evidence[0], evidence[Math.floor(evidence.length / 2)], evidence[evidence.length - 1]] : evidence;
+
+    // 反例：最强倾向之外，你也做过相反的选择（避免报告把人说死）
+    let counter = null;
+    if (top[0]) {
+      for (let i = s.log.length - 1; i >= 0; i--) {
+        const e = s.log[i];
+        if ((e.tags[top[0]] || 0) !== 0 && sign(e.tags[top[0]]) !== sign(s.axes[top[0]])) {
+          counter = { scene: e.scene, title: e.title, label: e.label, pole: pole(top[0], e.tags[top[0]]) };
+          break;
+        }
+      }
+    }
+
+    // 名场面：最强倾向方向上、最晚的一次选择（压力最大时）
+    let star = null;
+    if (top[0]) for (let i = s.log.length - 1; i >= 0; i--) { const e = s.log[i]; if (e.scene !== 12 && sign(e.tags[top[0]] || 0) === sign(s.axes[top[0]])) { star = e; break; } }
+    if (!star) star = s.log[s.log.length - 2] || s.log[0];
+
+    // 统计
+    const cnt = (a, d) => s.log.filter((e) => sign(e.tags[a] || 0) === d).length;
+    const stats = { now: cnt('p', 1), later: cnt('p', -1), say: cnt('m', 1), act: cnt('m', -1), close: cnt('d', 1), space: cnt('d', -1) };
+
+    // 压力下的你：前六幕 vs 后六幕
+    let pressure = '前后两半程，你的选择方向几乎没变：事情越大，你越像你自己。';
+    for (const a of ORDER) {
+      const h1 = s.half[1][a], h2 = s.half[2][a];
+      if (h1 * h2 < 0 && Math.abs(h1) >= 2 && Math.abs(h2) >= 1) {
+        pressure = `前六幕的小事里，你偏向「${pole(a, h1)}」；后六幕事情变大，你转向了「${pole(a, h2)}」。`;
+        break;
+      }
+    }
+
+    const linSays = {
+      A: '你说十点再聊。结果那晚是我先撑不住，改到了周日八点。',
+      B: '你那晚真的没来敲门。我松了口气，又有点失落。',
+      C: '你隔着门说的那句话，我后来想了好几天。',
+      D: '那杯牛奶我喝完了。其实那晚，我有点希望你敲门。',
+    }[s.choices[1]];
+    const linFinal = {
+      south: '你说要跟我去的时候，我差点没忍住。',
+      apart: '“一年”是你说的。所以这一年，我会认真过。',
+      stay: '你说希望我留下。那是这一周你说得最清楚的一句话。',
+      alone: { go: '你说要跟我去。我拒绝了，不是因为不想。', apart: '你说试一年。我答应得太快，什么都没跟你商量。', stay: '你说希望我留下。对不起，我还是走了。' }[s.flags.decision],
+      open: '你说还没想好。说实话，我也是。',
+    }[ending];
+
+    let alike;
+    if (s.flags.doorClosed) alike = '第7幕你也关上了门。在不想谈的时候，你们其实很像。';
+    else if (stats.later > stats.now) alike = `{ta}遇事习惯先关门。这一周你有 ${stats.later} 次也选择先放一放——在需要空间这件事上，你们挺像。`;
+    else if (stats.now > stats.later) alike = `{ta}遇事习惯先关门，而你有 ${stats.now} 次选择马上面对。你们会吵起来，大概因为这个；能谈下去，大概也是。`;
+    else alike = '{ta}遇事习惯先关门。你有时敲门，有时等门开——看那天你还剩多少力气。';
+
+    const decision = s.labels[12];
+    return { typeKey, type: t, ending, evidence: ev, counter, star, stats, pressure, linSays, linFinal, alike, decision, top };
+  }
+
+  function routeCode(s) {
+    const k = Object.keys(s.choices).sort((a, b) => a - b).map((i) => s.choices[i]).join('');
+    return k.slice(0, 3) + '·' + k.slice(3, 6) + '·' + k.slice(6, 9) + '·' + k.slice(9, 12);
+  }
+
+  // ---------- 状态 ----------
+  function newState(g, dry) {
+    return {
+      g: g || '他',
+      choices: {}, labels: {},
+      axes: { p: 0, m: 0, d: 0, f: 0 },
+      half: { 1: { p: 0, m: 0, d: 0, f: 0 }, 2: { p: 0, m: 0, d: 0, f: 0 } },
+      open: 0, heard: 0,
+      flags: { promise: false, agreement: false, knewEarly: false, doorClosed: false, decision: null },
+      log: [], variants: {},
+      dry: !!dry,
+    };
+  }
+
+  function choose(s, sceneId, key) {
+    const sc = SCENES[sceneId - 1];
+    if (sc.variant) s.variants[sceneId] = sc.variant(s);
+    const o = sc.options(s).find((x) => x.k === key);
+    if (!o) throw new Error('bad option ' + sceneId + key);
+    const half = sceneId <= 6 ? 1 : 2;
+    Object.keys(o.tags).forEach((a) => { s.axes[a] += o.tags[a]; s.half[half][a] += o.tags[a]; });
+    s.open += o.open; s.heard += o.heard;
+    if (o.set) Object.assign(s.flags, o.set);
+    s.choices[sceneId] = key;
+    s.labels[sceneId] = o.label;
+    s.log.push({ scene: sceneId, key, label: o.label, tags: o.tags, title: sc.title });
+    return o.react(s);
+  }
+
+  function fill(text, g) {
+    return String(text).replace(/\{ta\}/g, g);
+  }
+
+  const api = { SCENES, CHAPTERS, ENDINGS, TYPES, AXES, PAIR, SINGLE, T, newState, choose, computeEnding, computeType, report, axisMax, fill, echoes, epilogue, AFTER, routeCode, CORE, contradicts };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  else root.LAB = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script>
+<script>
+/* 恋爱冲突实验室 · 界面层
+ * 原则：每次操作只更新需要变的那一块；剧情只在进入某一幕时计算一次；不加载任何外部资源。 */
+(function () {
+  'use strict';
+  const { SCENES, CHAPTERS, ENDINGS, AXES, newState, choose, report, axisMax, fill, epilogue, routeCode } = window.LAB;
+  const app = document.getElementById('app');
+  const reduce = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const AXMAX = axisMax();
+  let s = null, t0 = 0;
+  // 被嵌在别的页面里（例如 Claude 内预览）时，浏览器通常禁止下载，只保留“长按保存”
+  // 测试数据面板只在网址末尾加 #debug 时出现
+  const DEBUG = location.hash === '#debug';
+  const framed = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+
+  // ---------- 本机存储：进度、结局图鉴、预约（失败时游戏照常运行） ----------
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('lab2_' + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('lab2_' + k, JSON.stringify(v)); } catch (e) {} },
+    del(k) { try { localStorage.removeItem('lab2_' + k); } catch (e) {} },
+  };
+  const saveProgress = () => store.set('progress', { g: s.g, choices: Object.keys(s.choices).sort((a, b) => a - b).map((k) => s.choices[k]), t0 });
+
+  const F = (t) => fill(t, s ? s.g : '他');
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const $ = (sel, el) => (el || app).querySelector(sel);
+
+  // 一次性拼好整段 HTML，用 CSS 延迟做逐行淡入（不占用 JS 计时器，也不阻塞点击）
+  function linesHTML(lines, base) {
+    return lines.map((l, i) => {
+      const t = esc(F(l.t));
+      const st = reduce ? '' : ` style="animation-delay:${(base || 0) + i * 45}ms"`;
+      if (l.k === 'say') return `<div class="ln say"${st}><span class="who">${esc(l.who)}</span><span class="t">${t}</span></div>`;
+      if (l.k === 'msg') return `<div class="ln msg"${st}><span class="who">${esc(l.who)}</span>${t}</div>`;
+      return `<div class="ln ${l.k}"${st}>${t}</div>`;
+    }).join('');
+  }
+
+  function bar(sceneId, label) {
+    let ticks = '';
+    for (let i = 0; i < 12; i++) ticks += `<i class="${i < sceneId ? 'on' : ''}"></i>`;
+    return `<div class="bar"><span>${label}</span><span class="ticks" aria-label="第${sceneId}幕，共12幕">${ticks}</span></div>`;
+  }
+
+  // 统一的屏幕骨架：顶栏 + 可滚动正文 + 底部操作区
+  function screen(top, body, dock, dockPlain) {
+    app.innerHTML = (top || '') + `<div class="scroller" id="scroller">${body}</div>` + (dock ? `<div class="dock${dockPlain ? ' plain' : ''}" id="dock">${dock}</div>` : '');
+    const sc = $('#scroller'); if (sc) sc.scrollTop = 0;
+  }
+
+  // ---------- 封面 ----------
+  function cover() {
+    const done = store.get('endings', []);
+    const prog = store.get('progress', null);
+    const resumable = prog && prog.choices && prog.choices.length > 0 && prog.choices.length < 12;
+    screen('', `
+      <section class="cover">
+        <div>
+          <h1>恋爱冲突实验室</h1>
+          <p class="sub">一段会记住你说过什么的恋爱。</p>
+          <p class="hook">“我现在不想谈，能不能让我一个人待会儿？”<br>林屿关上了门。你会怎么做？</p>
+        </div>
+        <div class="door" aria-hidden="true"></div>
+        <div class="meta"><span>12 个选择</span><span>5 种结局</span><span>8 种沟通类型</span></div>
+      </section>`,
+      `${resumable ? `<button class="cta" id="resume">继续上次（第 ${prog.choices.length + 1} 幕）</button><button class="ghost" id="go">从头开始</button>` : '<button class="cta" id="go">推开门</button>'}
+       ${done.length ? `<p class="fine">你已经走到过 ${done.length}/5 种结局</p>` : ''}
+       <p class="fine">娱乐向互动故事，不是心理诊断。</p>`, true);
+    $('#go').onclick = () => { store.del('progress'); setup(); };
+    if (resumable) $('#resume').onclick = () => resume(prog);
+  }
+
+  // 相同选择 → 完全相同的状态（引擎没有随机数，按顺序重放即可复现）
+  function resume(prog) {
+    s = newState(prog.g); t0 = prog.t0 || Date.now();
+    prog.choices.forEach((k, i) => choose(s, i + 1, k));
+    scene(prog.choices.length + 1);
+  }
+
+  function setup() {
+    screen('', `
+      <section class="setup">
+        <p class="eyebrow">开始之前</p>
+        <h2>故事里的恋人叫林屿。<br>在你的故事里，林屿是——</h2>
+        <div class="pair"><button class="pick" data-g="他">他</button><button class="pick" data-g="她">她</button></div>
+        <p class="fine">只替换称呼，剧情完全相同。</p>
+      </section>`, '', false);
+    app.querySelectorAll('.pick').forEach((b) => (b.onclick = () => { s = newState(b.dataset.g); t0 = Date.now(); saveProgress(); chapter(1); }));
+  }
+
+  // ---------- 章节卡 ----------
+  function chapter(no) {
+    const c = CHAPTERS[no];
+    const prev = no > 1 ? s.log.filter((e) => SCENES[e.scene - 1].ch === no - 1) : [];
+    screen('', `
+      <section class="chapter">
+        <div class="seam" aria-hidden="true"></div>
+        <div class="no">${c.name}</div>
+        <h2>${c.title}</h2>
+        ${prev.length
+          ? `<div class="recap"><span class="eyebrow">上一章，你</span>${prev.map((e) => `<div><b>${String(e.scene).padStart(2, '0')}</b>${esc(F(e.label))}</div>`).join('')}</div>`
+          : '<p class="fine" style="text-align:left">你和林屿恋爱一年半，同居三个月。</p>'}
+      </section>`, '<button class="cta" id="go">继续</button>', true);
+    $('#go').onclick = () => scene(no === 1 ? 1 : (no - 1) * 3 + 1);
+  }
+
+  // ---------- 一幕 ----------
+  function scene(id) {
+    const sc = SCENES[id - 1];
+    const c = CHAPTERS[sc.ch];
+    const opts = sc.options(s);
+    screen(
+      bar(id, `${c.name} · ${String(id).padStart(2, '0')}/12`),
+      `<section class="stage" id="stage">
+         <div class="scene-head"><h3>${sc.title}</h3>${sc.quick ? '<span class="chip">快选</span>' : ''}</div>
+         <div class="lines">${linesHTML(sc.text(s))}</div>
+       </section>`,
+      `<p class="prompt">你会——</p><div class="opts">${opts.map((o) => `<button class="opt" data-k="${o.k}">${esc(F(o.label))}</button>`).join('')}</div>`
+    );
+    const dock = $('#dock');
+    dock.onclick = (e) => {
+      const b = e.target.closest('.opt');
+      if (!b || dock.dataset.done) return;
+      dock.dataset.done = '1';
+      // 1) 立刻给反馈：底部区域收缩为“已选 + 继续”，按钮仍固定在底部，正文区获得更多空间
+      const label = b.textContent;
+      const react = choose(s, id, b.dataset.k);
+      saveProgress();
+      dock.innerHTML = `<p class="prompt">你选择了</p><div class="opts done"><button class="opt picked" disabled>${esc(label)}</button></div><button class="cta next">${id === 12 ? '看看结局' : '继续'}</button>`;
+      dock.onclick = null;
+      $('.next', dock).onclick = () => (id === 12 ? ending() : id % 3 === 0 ? chapter(sc.ch + 1) : scene(id + 1));
+      // 2) 只追加后续剧情这一块，并滚动到它
+      const div = document.createElement('div');
+      div.className = 'lines react';
+      div.innerHTML = linesHTML(react);
+      $('#stage').appendChild(div);
+      const scroller = $('#scroller');
+      scroller.scrollTo({ top: div.offsetTop - 12, behavior: reduce ? 'auto' : 'smooth' });
+    };
+  }
+
+  // ---------- 结局 ----------
+  function ending() {
+    const rep = report(s);
+    const e = ENDINGS[rep.ending];
+    const got = store.get('endings', []);
+    if (!got.includes(rep.ending)) { got.push(rep.ending); store.set('endings', got); }
+    store.del('progress');
+    const echo = epilogue(s);
+    screen(bar(12, '结局'),
+      `<section class="stage">
+         <p class="eyebrow">结局 · ${Object.keys(ENDINGS).indexOf(rep.ending) + 1}/5</p>
+         <div class="scene-head"><h3 style="font-size:32px">${e.name}</h3></div>
+         <div class="lines">${linesHTML(e.body(s))}</div>
+         ${echo.length ? `<p class="eyebrow" style="margin-top:10px">一个月后</p><div class="lines">${linesHTML(echo, 300)}</div>` : ''}
+       </section>`,
+      '<button class="cta next">看看这一周的你</button>', true);
+    $('.next').onclick = () => result(rep);
+  }
+
+  // ---------- 报告 ----------
+  const ACCENT = { judge: '#e9b872', straight: '#f2937a', translator: '#8fb8ea', milk: '#f0d3a0', cooler: '#7fcac1', keeper: '#b9a8ec', planet: '#a3d48e', radio: '#eda2c4' };
+
+  function axisRow(a) {
+    const v = s.axes[a], pos = 50 + (v / AXMAX[a]) * 50;
+    return `<div class="axis"><span class="${v < 0 ? 'on' : ''}">${AXES[a].neg}</span><div class="track"><span class="dot" style="left:${pos}%"></span></div><span class="${v > 0 ? 'on' : ''}">${AXES[a].pos}</span></div>`;
+  }
+
+  function result(rep) {
+    const t = rep.type, star = rep.star, st = rep.stats;
+    const got = store.get('endings', []);
+    const reserved = store.get('reserved', false);
+    app.style.setProperty('--lamp', ACCENT[rep.typeKey]);
+    screen('', `
+      <section class="report">
+        <div>
+          <p class="eyebrow">在这段故事里，你是</p>
+          <h2 class="type-name">${t.name}</h2>
+          <div class="type-en">${t.en}</div>
+        </div>
+        <p class="tagline">“${esc(F(t.tag)).replace(/。$/, '')}”</p>
+        <div class="chips">
+          <span class="end-chip">结局 · ${ENDINGS[rep.ending].name}</span>
+          <span class="stat">马上面对 ${st.now}</span><span class="stat">先放一放 ${st.later}</span><span class="stat">说出来 ${st.say}</span><span class="stat">做出来 ${st.act}</span>
+        </div>
+
+        <div class="card">
+          <h4>为什么是${t.name}</h4>
+          ${rep.evidence.map((e) => `<div class="ev"><span class="ev-no">${String(e.scene).padStart(2, '0')}</span><span class="ev-t">${esc(F(e.label))}</span><span class="ev-p">${e.pole}</span></div>`).join('')}
+          ${rep.counter ? `<p class="counter">但你也不总是这样：第${rep.counter.scene}幕，你选了「${esc(F(rep.counter.label))}」。</p>` : ''}
+        </div>
+
+        <div class="card">
+          <h4>这一周，你的选择偏向</h4>
+          ${['p', 'm', 'd', 'f'].map(axisRow).join('')}
+          <p class="fine" style="text-align:left">圆点越靠边，倾向越明显。两边都是合理的做法，没有好坏。</p>
+        </div>
+
+        <div class="card">
+          <div class="kv"><span class="k">最后，你说</span><span class="quote">${esc(F(rep.decision))}</span></div>
+          <div class="kv"><span class="k">林屿想对你说</span><span class="quote">“${esc(F(rep.linFinal))}”<br>“${esc(F(rep.linSays))}”</span></div>
+          <div class="kv"><span class="k">压力下的你</span><span>${esc(rep.pressure)}</span></div>
+          <div class="kv"><span class="k">你和林屿</span><span>${esc(F(rep.alike))}</span></div>
+        </div>
+
+        <div class="card">
+          <div class="kv"><span class="k">你的优势</span><span>${t.strength}</span></div>
+          <div class="kv"><span class="k">容易卡住的地方</span><span>${t.blind}</span></div>
+          <div class="kv"><span class="k">下次可以试试</span><span>${t.tip}</span></div>
+          <div class="meme">${t.meme}</div>
+        </div>
+
+        <button class="cta" id="share">生成我的分享卡</button>
+
+        <div class="card">
+          <h4>结局收集 ${got.length}/5</h4>
+          <div class="slots">${Object.keys(ENDINGS).map((k) => `<div class="slot ${got.includes(k) ? 'got' : ''}">${got.includes(k) ? ENDINGS[k].name : '？？？'}</div>`).join('')}</div>
+          <p class="fine" style="text-align:left">你的路线码 ${routeCode(s)}。换一种选择，林屿会记住不一样的你。</p>
+          <button class="ghost" id="again">再玩一次</button>
+        </div>
+
+        <div class="card teaser">
+          <span style="font-size:12px;color:var(--lamp);letter-spacing:.12em">后续内容 · 制作中</span>
+          <p class="t">门的另一边：林屿视角</p>
+          <span>那三分钟，林屿打了什么？用林屿的身份重新过这一周。目前还没有上线，也不收费。</span>
+          <button class="ghost" id="reserve">${reserved ? '已记下，谢谢你' : '我想玩这个'}</button>
+          <p class="fine" style="text-align:left" id="reserve-note">${reserved ? '只记录在你这台设备上，用来了解大家是否感兴趣。' : ''}</p>
+        </div>
+
+        <p class="fine">娱乐向互动故事，不构成心理评估 · 不收集任何个人信息</p>
+        ${DEBUG ? '<button class="linkish" id="dbg">本局数据（测试用）</button><div class="debug hidden" id="dbgbox"></div>' : ''}
+      </section>`, '', false);
+    $('#again').onclick = () => { app.style.removeProperty('--lamp'); s = null; setup(); };
+    $('#share').onclick = () => shareCard(rep);
+    $('#reserve').onclick = (e) => {
+      store.set('reserved', true);
+      e.target.textContent = '已记下，谢谢你';
+      $('#reserve-note').textContent = '只记录在你这台设备上，用来了解大家是否感兴趣。';
+    };
+    if (DEBUG) $('#dbg').onclick = () => {
+      const box = $('#dbgbox');
+      box.classList.toggle('hidden');
+      box.textContent =
+        `路线码：${routeCode(s)}\n` +
+        `林屿开口度：${s.open}　你的被听见度：${s.heard}\n` +
+        `四轴：节奏 ${s.axes.p} / 方式 ${s.axes.m} / 距离 ${s.axes.d} / 重心 ${s.axes.f}\n` +
+        `前半程：${JSON.stringify(s.half[1])}\n后半程：${JSON.stringify(s.half[2])}\n` +
+        `分支：第7幕 ${s.variants[7]} · 第8幕 ${s.variants[8]} · 第11幕 ${s.variants[11]} · 第12幕 ${s.variants[12]}\n` +
+        `标记：${JSON.stringify(s.flags)}\n类型：${rep.typeKey} · 结局：${rep.ending}`;
+    };
+  }
+
+  // ---------- 分享卡：按人格配色，引用玩家自己的一句话 ----------
+  function wrap(ctx, text, x, y, maxW, lh, maxLines) {
+    let line = '', yy = y, n = 1;
+    const chars = Array.from(text);
+    for (let i = 0; i < chars.length; i++) {
+      const ch = chars[i];
+      // 标点不单独起一行（避免“”。，等落到行首）
+      if (ctx.measureText(line + ch).width > maxW && line && !/[”’」』。，、！？；：）]/.test(ch)) {
+        if (maxLines && n >= maxLines) { ctx.fillText(line.slice(0, -1) + '…', x, yy); return yy + lh; }
+        ctx.fillText(line, x, yy); line = ch; yy += lh; n++;
+      } else line += ch;
+    }
+    ctx.fillText(line, x, yy);
+    return yy + lh;
+  }
+  function drawCard(rep) {
+    const W = 1080, H = 1440, c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const x = c.getContext('2d');
+    const acc = ACCENT[rep.typeKey];
+    const serif = '"Songti SC","STSong","Noto Serif CJK SC",serif', sans = '-apple-system,"PingFang SC","Noto Sans CJK SC",sans-serif';
+    // 背景
+    const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#171b25'); g.addColorStop(1, '#0a0c11');
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    // 右侧一扇门：门框 + 门缝里的光
+    x.strokeStyle = 'rgba(236,230,218,.10)'; x.lineWidth = 3; x.strokeRect(830, 70, 160, 250);
+    const lg = x.createLinearGradient(0, 70, 0, 320); lg.addColorStop(0, 'rgba(0,0,0,0)'); lg.addColorStop(.5, acc); lg.addColorStop(1, 'rgba(0,0,0,0)');
+    x.fillStyle = lg; x.fillRect(826, 70, 5, 250);
+    x.globalAlpha = .18; x.fillStyle = acc; x.beginPath(); x.moveTo(830, 320); x.lineTo(990, 320); x.lineTo(1060, 370); x.lineTo(760, 370); x.closePath(); x.fill(); x.globalAlpha = 1;
+    // 抬头
+    x.fillStyle = '#8e93a0'; x.font = `500 30px ${sans}`; x.fillText('恋爱冲突实验室', 88, 150);
+    x.fillText('路线 ' + routeCode(s), 88, 196);
+    // 类型
+    x.fillStyle = '#ece6da'; x.font = `500 34px ${sans}`; x.fillText('这一周，我是', 88, 330);
+    x.fillStyle = acc; x.font = `900 112px ${serif}`; x.fillText(rep.type.name, 82, 460);
+    x.fillStyle = '#ece6da'; x.font = `500 40px ${serif}`;
+    let y = wrap(x, '“' + F(rep.type.tag).replace(/。$/, '') + '”', 88, 560, 860, 60, 2);
+    // 我的一句话
+    y += 40;
+    x.font = `500 40px ${serif}`;
+    const two = x.measureText(F(rep.star.label).replace(/[”’」』。，、！？；：）]+$/, '')).width > 840;
+    const bh = two ? 210 : 154;
+    x.fillStyle = 'rgba(236,230,218,.06)'; x.fillRect(88, y - 10, 904, bh);
+    x.fillStyle = acc; x.fillRect(88, y - 10, 6, bh);
+    x.fillStyle = '#8e93a0'; x.font = `400 28px ${sans}`; x.fillText(`第${rep.star.scene}幕《${rep.star.title}》，我选了：`, 124, y + 40);
+    x.fillStyle = '#ece6da'; x.font = `500 40px ${serif}`;
+    wrap(x, F(rep.star.label), 124, y + 104, 840, 56, 2);
+    y += bh + 60;
+    // 四轴
+    ['p', 'm', 'd', 'f'].forEach((a, i) => {
+      const yy = y + i * 64, v = s.axes[a], pos = 300 + (v / AXMAX[a] + 1) * 240;
+      x.font = `400 28px ${sans}`; x.fillStyle = v < 0 ? '#ece6da' : '#6f7480'; x.fillText(AXES[a].neg, 88, yy + 10);
+      x.fillStyle = v > 0 ? '#ece6da' : '#6f7480'; x.textAlign = 'right'; x.fillText(AXES[a].pos, 992, yy + 10); x.textAlign = 'left';
+      x.fillStyle = 'rgba(236,230,218,.12)'; x.fillRect(300, yy - 3, 480, 6);
+      x.fillStyle = acc; x.beginPath(); x.arc(pos, yy, 12, 0, Math.PI * 2); x.fill();
+    });
+    // 这一周的统计
+    const st = rep.stats;
+    x.fillStyle = '#cfc9be'; x.font = `400 30px ${sans}`;
+    x.fillText(`马上面对 ${st.now} 次 · 先放一放 ${st.later} 次 · 说出来 ${st.say} 次 · 做出来 ${st.act} 次`, 88, Math.min(y + 4 * 64 + 56, H - 250));
+    // 结局与邀请
+    x.fillStyle = acc; x.font = `500 34px ${sans}`; x.fillText('结局 · ' + ENDINGS[rep.ending].name, 88, H - 170);
+    x.fillStyle = '#ece6da'; x.font = `400 30px ${sans}`; wrap(x, '最后我说：' + F(rep.decision), 88, H - 120, 900, 44, 1);
+    x.fillStyle = '#6f7480'; x.font = `400 26px ${sans}`; x.fillText('林屿关上了门。换作是你，会怎么做？', 88, H - 60);
+    return c;
+  }
+  function shareCard(rep) {
+    const m = document.createElement('div');
+    m.className = 'modal'; m.setAttribute('role', 'dialog'); m.setAttribute('aria-label', '分享卡');
+    m.innerHTML = '<p id="sc-status">正在生成分享卡…</p>';
+    document.body.appendChild(m);
+    const close = () => m.remove();
+    requestAnimationFrame(() => setTimeout(() => {
+      const src = drawCard(rep).toDataURL('image/png');
+      m.innerHTML = `<img alt="我的分享卡：${esc(rep.type.name)}" src="${src}">
+        <p id="sc-tip">手机上长按图片即可保存</p>
+        ${framed ? '' : `<a class="cta" id="sc-save" href="${src}" download="恋爱冲突实验室-${esc(rep.type.name)}.png" style="text-align:center;text-decoration:none">保存图片</a>`}
+        <button class="ghost" id="sc-close">关闭</button>`;
+      m.querySelector('#sc-close').onclick = close;
+      const save = m.querySelector('#sc-save');
+      if (save) save.addEventListener('click', () => {
+        const tip = m.querySelector('#sc-tip');
+        tip.textContent = '已开始保存。电脑上在“下载”文件夹里；手机上若打开了图片，长按即可存到相册。';
+        save.textContent = '再保存一次';
+      });
+    }, 0));
+  }
+
+  cover();
+})();
+</script>
+</body>
+</html>
